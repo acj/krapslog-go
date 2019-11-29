@@ -22,6 +22,7 @@ const (
 func main() {
 	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var showProgress = flag.Bool("progress", false, "display progress while scanning the log file")
+	var strict = flag.Bool("strict", false, "abort scanning when a line doesn't contain a timestamp")
 	flag.Parse()
 
 	filename := flag.Arg(0)
@@ -76,8 +77,11 @@ func main() {
 		line := scanner.Text()
 		t, err := dateFinder(line)
 		if err != nil {
-			// TODO: bailing out on these errors should be optional
-			panic(err)
+			if *strict {
+				fmt.Fprintf(os.Stderr,"\rerror: %v", err)
+				os.Exit(-1)
+			}
+			continue
 		}
 		times = append(times, t.Unix())
 
