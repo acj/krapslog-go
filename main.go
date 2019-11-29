@@ -61,15 +61,37 @@ func main() {
 
 	times := make([]int64, 0)
 
+	fileStat, err := file.Stat()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error calling stat: %v", err)
+		os.Exit(-1)
+	}
+	offset := int64(0)
+	totalBytes := fileStat.Size()
+	progressByteThreshold := totalBytes / 10
+
+	nextProgressByteThreshold := int64(0)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		t, err := dateFinder(scanner.Text())
+		line := scanner.Text()
+		t, err := dateFinder(line)
 		if err != nil {
 			// TODO: bailing out on these errors should be optional
 			panic(err)
 		}
 		times = append(times, t.Unix())
+
+		if offset >= nextProgressByteThreshold {
+			progressPercent := (float64(nextProgressByteThreshold)/float64(totalBytes))*100.0
+			if *showProgress {
+				fmt.Fprintf(os.Stderr, "\r%.f%%", progressPercent)
+			}
+
+			nextProgressByteThreshold += progressByteThreshold
+		}
+		offset += int64(len(line))
 	}
+	fmt.Fprintf(os.Stderr, "\r")
 
 	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
 	if err != nil {
