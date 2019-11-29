@@ -50,6 +50,10 @@ func main() {
 		os.Exit(-1)
 	}
 
+	if len(times) == 0 {
+		fmt.Fprintln(os.Stderr, "didn't find any lines with recognizable dates")
+		os.Exit(-1)
+	}
 	firstTime := times[0]
 	lastTime := times[len(times)-1]
 	spread := lastTime - firstTime
