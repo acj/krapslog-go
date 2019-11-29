@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/joliv/spark"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func main() {
@@ -43,9 +44,11 @@ func main() {
 		times = append(times, t.Unix())
 	}
 
-	// TODO: Make this dynamic -- either based on terminal width or a parameter value
-	//  width, height, err := terminal.GetSize(0)
-	terminalWidth := 80
+	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't get terminal size: %v", err)
+		os.Exit(-1)
+	}
 
 	firstTime := times[0]
 	lastTime := times[len(times)-1]
