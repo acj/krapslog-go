@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/joliv/spark"
+	"golang.org/x/crypto/ssh/terminal"
 	"os"
 )
 
@@ -30,17 +31,22 @@ func main() {
 		exitWithMessage("error calling stat: %v", err)
 	}
 
+	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		exitWithMessage("couldn't get terminal size: %v", err)
+	}
+
 	b := NewBinner()
 	b.dateFormat = *requestedDateFormat
 	b.displayProgress = *displayProgress
 	b.strictLineParsing = *strictParsing
 	b.totalLogSize = fileStat.Size()
 
-	linesPerBucket, err := b.BinLinesByTimestamp(file)
+	linesPerCharacter, err := b.Bin(file, terminalWidth)
 	if err != nil {
 		exitWithMessage("failed to process log: %v", err)
 	}
-	sparkline := spark.Line(linesPerBucket)
+	sparkline := spark.Line(linesPerCharacter)
 	fmt.Println(sparkline)
 
 	os.Exit(0)

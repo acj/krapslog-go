@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"math"
 	"os"
@@ -13,6 +13,7 @@ import (
 )
 
 type Binner struct {
+	dateFinderFunc func(line, dateFormat string, dateFormatRegex *regexp.Regexp) (time.Time, error)
 	dateFormat string
 	exitFunc func(m string, args ...interface{})
 	displayProgress bool
@@ -22,56 +23,54 @@ type Binner struct {
 
 func NewBinner() Binner {
 	return Binner{
-		exitFunc: exitWithMessage,
+		dateFinderFunc: findFirstTimestamp,
+		exitFunc:       exitWithMessage,
 	}
 }
 
-func (b Binner) BinLinesByTimestamp(r io.Reader) ([]float64, error) {
+func (b Binner) Bin(r io.Reader, maxWidth int) ([]float64, error) {
 	formatRegexString := convertDateFormatToRegex(b.dateFormat)
 	formatRegex := regexp.MustCompile(formatRegexString)
 	canonicalTime, err := time.Parse(time.ANSIC, goAnsicDateFormat)
 	if err != nil {
-		exitWithMessage("couldn't parse canonical time: %v", err)
+		return nil, fmt.Errorf("couldn't parse canonical time: %v", err)
 	}
-	t, err := time.Parse(b.dateFormat, b.dateFormat)
-	if err != nil || t != canonicalTime {
-		fmt.Fprintf(os.Stderr, "Invalid date/time format '%s'", b.dateFormat)
-
-		if err != nil {
-			fmt.Fprintf(os.Stderr, ": %v", err)
-		}
-
-		exitWithMessage("\n\nThe format must include year, day, and time. Please follow the format described in https://golang.org/pkg/time/#Time.Format\n")
+	if err := checkDateFormatForErrors(b.dateFormat, canonicalTime); err != nil {
+		return nil, err
 	}
 
-	dateFinder := func(line string) (time.Time, error) {
-		if dateString := formatRegex.FindString(line); dateString != "" {
-			return time.Parse(b.dateFormat, dateString)
-		}
-
-		return time.Time{}, fmt.Errorf("couldn't find time in line '%s'", line)
+	timestampsFromLines, err := b.extractTimestampsFromLines(r, formatRegex)
+	if err != nil {
+		return nil, err
+	}
+	if len(timestampsFromLines) == 0 {
+		return nil, errors.New("didn't find any lines with recognizable dates")
 	}
 
+	linesPerBucket := binTimestampsToFitLineWidth(timestampsFromLines, maxWidth)
+
+	return linesPerBucket, nil
+}
+
+func (b Binner) extractTimestampsFromLines(r io.Reader, formatRegex *regexp.Regexp) ([]int64, error) {
 	times := make([]int64, 0)
-
 	offset := int64(0)
 	progressByteThreshold := b.totalLogSize / 10
-
 	nextProgressByteThreshold := int64(0)
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
-		t, err := dateFinder(line)
+		t, err := b.dateFinderFunc(line, b.dateFormat, formatRegex)
 		if err != nil {
 			if b.strictLineParsing {
-				exitWithMessage("\rerror: %v", err)
+				return nil, fmt.Errorf("\rerror: %v", err)
 			}
 			continue
 		}
 		times = append(times, t.Unix())
 
 		if offset >= nextProgressByteThreshold {
-			progressPercent := (float64(nextProgressByteThreshold)/float64(b.totalLogSize))*100.0
+			progressPercent := (float64(nextProgressByteThreshold) / float64(b.totalLogSize)) * 100.0
 			if b.displayProgress && b.totalLogSize > 0 {
 				fmt.Fprintf(os.Stderr, "\r%.f%%", progressPercent)
 			}
@@ -81,27 +80,35 @@ func (b Binner) BinLinesByTimestamp(r io.Reader) ([]float64, error) {
 		offset += int64(len(line))
 	}
 	fmt.Fprintf(os.Stderr, "\r")
+	return times, nil
+}
 
-	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
-	if err != nil {
-		exitWithMessage("couldn't get terminal size: %v", err)
-	}
-
-	if len(times) == 0 {
-		exitWithMessage("didn't find any lines with recognizable dates")
-	}
-	firstTime := times[0]
-	lastTime := times[len(times)-1]
+func binTimestampsToFitLineWidth(timestampsFromLines []int64, terminalWidth int) []float64 {
+	firstTime := timestampsFromLines[0]
+	lastTime := timestampsFromLines[len(timestampsFromLines)-1]
 	spread := lastTime - firstTime
 	secondsPerBucket := int64(math.Ceil(float64(spread) / float64(terminalWidth)))
 	linesPerBucket := make([]float64, terminalWidth, terminalWidth)
-
-	for _, lineUnixTime := range times {
+	for _, lineUnixTime := range timestampsFromLines {
 		bucket := (lineUnixTime - firstTime) / secondsPerBucket
 		linesPerBucket[bucket]++
 	}
+	return linesPerBucket
+}
 
-	return linesPerBucket, nil
+func checkDateFormatForErrors(dateFormat string, canonicalTime time.Time) error {
+	t, err := time.Parse(dateFormat, dateFormat)
+	if err != nil || t != canonicalTime {
+		fmt.Fprintf(os.Stderr, "Invalid date/time format '%s'", dateFormat)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, ": %v", err)
+		}
+
+		return errors.New("\n\nThe format must include year, day, and time. Please follow the format described in https://golang.org/pkg/time/#Time.Format\n")
+	}
+
+	return nil
 }
 
 func convertDateFormatToRegex(format string) string {
@@ -127,4 +134,12 @@ func convertDateFormatToRegex(format string) string {
 	regex := replacer.Replace(format)
 
 	return regex
+}
+
+func findFirstTimestamp(s, timestampFormat string, timestampFormatRegex *regexp.Regexp) (time.Time, error) {
+	if dateString := timestampFormatRegex.FindString(s); dateString != "" {
+		return time.Parse(timestampFormat, dateString)
+	}
+
+	return time.Time{}, fmt.Errorf("couldn't find time in line '%s'", s)
 }
