@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		exitWithMessage("invalid timestamp format: %v", err)
 	}
-	timestampsFromLines, err := timeFinder.extractTimestampsFromLines(file)
+	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(file)
 	if err != nil {
 		exitWithMessage("failed to process log: %v", err)
 	}

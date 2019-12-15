@@ -96,7 +96,7 @@ func parseTime(s string) time.Time {
 	return t
 }
 
-func TestTimeFinder_extractTimestampsFromLines(t *testing.T) {
+func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 	type fields struct {
 		timeFormat string
 		timeRegex  *regexp.Regexp
@@ -136,13 +136,13 @@ func TestTimeFinder_extractTimestampsFromLines(t *testing.T) {
 				timeFormat: tt.fields.timeFormat,
 				timeRegex:  tt.fields.timeRegex,
 			}
-			got, err := tf.extractTimestampsFromLines(tt.args.r)
+			got, err := tf.extractTimestampFromEachLine(tt.args.r)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("extractTimestampsFromLines() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("extractTimestampFromEachLine() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("extractTimestampsFromLines() got = %v, want %v", got, tt.want)
+				t.Errorf("extractTimestampFromEachLine() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

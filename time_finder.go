@@ -70,7 +70,7 @@ func convertTimeFormatToRegex(format string) string {
 	return regex
 }
 
-func (tf *TimeFinder) extractTimestampsFromLines(r io.Reader) ([]time.Time, error) {
+func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
 	times := make([]time.Time, 0)
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
