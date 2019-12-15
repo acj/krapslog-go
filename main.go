@@ -16,7 +16,6 @@ const (
 func main() {
 	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var displayProgress = flag.Bool("progress", false, "display progress while scanning the log file")
-	var strictParsing = flag.Bool("strict", false, "abort scanning when a line doesn't contain a timestamp")
 	flag.Parse()
 
 	filename := flag.Arg(0)
@@ -26,26 +25,24 @@ func main() {
 	}
 	defer file.Close()
 
-	fileStat, err := file.Stat()
-	if err != nil {
-		exitWithMessage("error calling stat: %v", err)
-	}
-
 	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
 	if err != nil {
 		exitWithMessage("couldn't get terminal size: %v", err)
 	}
 
-	b := NewBinner()
-	b.dateFormat = *requestedDateFormat
-	b.displayProgress = *displayProgress
-	b.strictLineParsing = *strictParsing
-	b.totalLogSize = fileStat.Size()
-
-	linesPerCharacter, err := b.Bin(file, terminalWidth)
+	timeFinder, err := NewTimeFinder(*requestedDateFormat)
+	if err != nil {
+		exitWithMessage("invalid timestamp format: %v", err)
+	}
+	timestampsFromLines, err := timeFinder.extractTimestampsFromLines(file)
 	if err != nil {
 		exitWithMessage("failed to process log: %v", err)
 	}
+	if len(timestampsFromLines) == 0 {
+		exitWithMessage("didn't find any lines with recognizable dates")
+	}
+
+	linesPerCharacter := BinTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkline := spark.Line(linesPerCharacter)
 	fmt.Println(sparkline)
 
