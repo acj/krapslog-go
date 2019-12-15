@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	apacheCommonLogFormatDate = "2/Jan/2006:15:04:05.000"
+	apacheCommonLogFormatDate = "02/Jan/2006:15:04:05.000"
 	goAnsicDateFormat = "Mon Jan 2 15:04:05 2006"
 )
 
