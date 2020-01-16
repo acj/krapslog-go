@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/joliv/spark"
 	"golang.org/x/crypto/ssh/terminal"
+	"io"
 	"os"
 )
 
@@ -34,7 +35,21 @@ func main() {
 	if err != nil {
 		exitWithMessage("invalid timestamp format: %v", err)
 	}
-	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(file)
+
+	var logReader io.Reader = file
+	if *displayProgress {
+		logReader, err = NewProgressReader(file, func(progressPercent float64) {
+			fmt.Fprintf(os.Stderr, "\r%.f%%", progressPercent)
+			if progressPercent == 100.0 {
+				fmt.Fprintf(os.Stderr, "\r")
+			}
+		})
+		if err != nil {
+			exitWithMessage("failed to read log: %v", err)
+		}
+	}
+
+	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(logReader)
 	if err != nil {
 		exitWithMessage("failed to process log: %v", err)
 	}
