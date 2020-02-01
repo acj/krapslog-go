@@ -17,6 +17,7 @@ const (
 func main() {
 	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var displayProgress = flag.Bool("progress", false, "display progress while scanning the log file")
+	var timeMarkerCount = flag.Int("markers", 0, "number of time markers to display")
 	flag.Parse()
 
 	filename := flag.Arg(0)
@@ -58,8 +59,21 @@ func main() {
 	}
 
 	linesPerCharacter := BinTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
-	sparkline := spark.Line(linesPerCharacter)
-	fmt.Println(sparkline)
+	sparkLine := spark.Line(linesPerCharacter)
+
+	if *timeMarkerCount > 0 {
+		firstTimestamp := timestampsFromLines[0]
+		lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
+		duration := lastTimestamp.Sub(firstTimestamp)
+		headerText := headerText(firstTimestamp.Add(duration/2), lastTimestamp, *timeMarkerCount/2, terminalWidth)
+		footerText := footerText(firstTimestamp, firstTimestamp.Add(duration/2), *timeMarkerCount/2, terminalWidth)
+
+		fmt.Print(headerText)
+		fmt.Println(sparkLine)
+		fmt.Print(footerText)
+	} else {
+		fmt.Println(sparkLine)
+	}
 
 	os.Exit(0)
 }
