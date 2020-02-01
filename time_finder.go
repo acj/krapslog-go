@@ -11,7 +11,7 @@ import (
 
 type TimeFinder struct {
 	timeFormat string
-	timeRegex *regexp.Regexp
+	timeRegex  *regexp.Regexp
 }
 
 func NewTimeFinder(timeFormat string) (*TimeFinder, error) {

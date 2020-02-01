@@ -21,7 +21,7 @@ var sampleApacheCommonLogFormatTimestamp = "23/Nov/2019:06:26:40.781"
 
 func Test_checkDateFormatForErrors(t *testing.T) {
 	type args struct {
-		dateFormat    string
+		dateFormat string
 	}
 	tests := []struct {
 		name    string
@@ -29,15 +29,15 @@ func Test_checkDateFormatForErrors(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "for garbage value, returns an error",
-			args:    args{
+			name: "for garbage value, returns an error",
+			args: args{
 				dateFormat: "blah",
 			},
 			wantErr: true,
 		},
 		{
-			name:    "for valid date value, does not return an error",
-			args:    args{
+			name: "for valid date value, does not return an error",
+			args: args{
 				dateFormat: "2/Jan/2006:15:04:05.000",
 			},
 			wantErr: false,
@@ -63,19 +63,19 @@ func Test_convertDateFormatToRegex(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "common log format",
-			args:    args{"2/Jan/2006:15:04:05.000"},
-			want:    "\\d/[A-Za-z]{3}/\\d{4}:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d",
+			name: "common log format",
+			args: args{"2/Jan/2006:15:04:05.000"},
+			want: "\\d/[A-Za-z]{3}/\\d{4}:\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d",
 		},
 		{
-			name:    "Go default log format",
-			args:    args{"2006/1/2 15:04:05"},
-			want:    "\\d{4}/\\d/\\d \\d\\d:\\d\\d:\\d\\d",
+			name: "Go default log format",
+			args: args{"2006/1/2 15:04:05"},
+			want: "\\d{4}/\\d/\\d \\d\\d:\\d\\d:\\d\\d",
 		},
 		{
-			name:    "abbreviated log format",
-			args:    args{"Jan 2 15:04:05"},
-			want:    "[A-Za-z]{3} \\d \\d\\d:\\d\\d:\\d\\d",
+			name: "abbreviated log format",
+			args: args{"Jan 2 15:04:05"},
+			want: "[A-Za-z]{3} \\d \\d\\d:\\d\\d:\\d\\d",
 		},
 	}
 	for _, tt := range tests {
@@ -112,21 +112,21 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "for single line, returns single timestamp",
+			name:   "for single line, returns single timestamp",
 			fields: apacheCommonLogFormatFields,
 			args: args{
-				r:          strings.NewReader(`haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} "GET /foobarbaz.html HTTP/1.1\n`),
+				r: strings.NewReader(`haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} "GET /foobarbaz.html HTTP/1.1\n`),
 			},
-			want: []time.Time{parseTime(sampleApacheCommonLogFormatTimestamp)},
+			want:    []time.Time{parseTime(sampleApacheCommonLogFormatTimestamp)},
 			wantErr: false,
 		},
 		{
-			name: "for two lines, returns two timestamps",
+			name:   "for two lines, returns two timestamps",
 			fields: apacheCommonLogFormatFields,
 			args: args{
-				r:          strings.NewReader(strings.Repeat("haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1\n", 2)),
+				r: strings.NewReader(strings.Repeat("haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1\n", 2)),
 			},
-			want: repeatTime(parseTime(sampleApacheCommonLogFormatTimestamp), 2),
+			want:    repeatTime(parseTime(sampleApacheCommonLogFormatTimestamp), 2),
 			wantErr: false,
 		},
 	}
@@ -164,21 +164,24 @@ func TestTimeFinder_findFirstTimestamp(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "for garbage input, returns an error",
+			name:   "for garbage input, returns an error",
 			fields: apacheCommonLogFormatFields,
 			args: args{
 				"garbage date",
 			},
-			want: time.Time{},
+			want:    time.Time{},
 			wantErr: true,
 		},
 		{
-			name: "for valid input, returns a date and no error",
+			name:   "for valid input, returns a date and no error",
 			fields: apacheCommonLogFormatFields,
 			args: args{
 				sampleApacheCommonLogFormatTimestamp,
 			},
-			want: func() time.Time { t, _ := time.Parse(apacheCommonLogFormatDate, sampleApacheCommonLogFormatTimestamp); return t }(),
+			want: func() time.Time {
+				t, _ := time.Parse(apacheCommonLogFormatDate, sampleApacheCommonLogFormatTimestamp)
+				return t
+			}(),
 			wantErr: false,
 		},
 	}

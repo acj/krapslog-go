@@ -27,7 +27,7 @@ func BinTimestampsToFitLineWidth(timesFromLines []time.Time, bucketCount int) []
 		if lineUnixTime < firstTime {
 			continue
 		}
-		bucket := int64((float64(bucketCount) * float64(lineUnixTime - firstTime)) / float64(spread))
+		bucket := int64((float64(bucketCount) * float64(lineUnixTime-firstTime)) / float64(spread))
 		linesPerBucket[bucket]++
 	}
 	return linesPerBucket

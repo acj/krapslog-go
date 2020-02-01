@@ -11,7 +11,7 @@ import (
 
 const (
 	apacheCommonLogFormatDate = "02/Jan/2006:15:04:05.000"
-	goAnsicDateFormat = "Mon Jan 2 15:04:05 2006"
+	goAnsicDateFormat         = "Mon Jan 2 15:04:05 2006"
 )
 
 func main() {

@@ -9,8 +9,8 @@ import (
 type ProgressReader struct {
 	io.Reader
 	currentOffset int64
-	totalBytes int64
-	progressFunc func(currentProgress float64)
+	totalBytes    int64
+	progressFunc  func(currentProgress float64)
 }
 
 func NewProgressReader(r io.Reader, progressFunc func(float64)) (*ProgressReader, error) {
