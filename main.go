@@ -27,11 +27,6 @@ func main() {
 	}
 	defer file.Close()
 
-	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
-	if err != nil {
-		exitWithMessage("couldn't get terminal size: %v", err)
-	}
-
 	timeFinder, err := NewTimeFinder(*requestedDateFormat)
 	if err != nil {
 		exitWithMessage("invalid timestamp format: %v", err)
@@ -58,6 +53,11 @@ func main() {
 		exitWithMessage("didn't find any lines with recognizable dates")
 	}
 
+	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
+	if err != nil {
+		exitWithMessage("couldn't get terminal size: %v", err)
+	}
+	
 	linesPerCharacter := BinTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 
