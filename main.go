@@ -57,7 +57,7 @@ func main() {
 	if err != nil {
 		exitWithMessage("couldn't get terminal size: %v", err)
 	}
-	
+
 	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 

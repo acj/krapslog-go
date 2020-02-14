@@ -55,7 +55,7 @@ func footerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 				header[j],
 				firstTimestamp.Add(time.Duration(j*1e9)*segmentDuration),
 				i*(terminalWidth/2/markerCount),
-				len(header) - (i+1),
+				len(header)-(i+1),
 				j,
 				false,
 			)
