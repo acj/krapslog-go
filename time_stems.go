@@ -14,7 +14,8 @@ func headerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 			header[i][j] = ' '
 		}
 	}
-	segmentDuration := time.Duration(lastTimestamp.Sub(firstTimestamp).Seconds() / float64(markerCount))
+	totalDuration := lastTimestamp.Sub(firstTimestamp).Seconds()
+	segmentDuration := time.Duration(totalDuration / float64(markerCount))
 
 	for i := 0; i < markerCount; i++ {
 		for j := 0; j < len(header); j++ {
@@ -47,7 +48,8 @@ func footerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 			header[i][j] = ' '
 		}
 	}
-	segmentDuration := time.Duration(lastTimestamp.Sub(firstTimestamp).Seconds() / float64(markerCount))
+	totalDuration := lastTimestamp.Sub(firstTimestamp).Seconds()
+	segmentDuration := time.Duration(totalDuration / float64(markerCount))
 
 	for i := 0; i < markerCount; i++ {
 		for j := 0; j < len(header); j++ {
