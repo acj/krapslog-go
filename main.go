@@ -58,7 +58,7 @@ func main() {
 		exitWithMessage("couldn't get terminal size: %v", err)
 	}
 	
-	linesPerCharacter := BinTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
+	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 
 	if *timeMarkerCount > 0 {
