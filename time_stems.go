@@ -21,7 +21,7 @@ func headerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 			renderLine(
 				header[j],
 				firstTimestamp.Add(time.Duration(j*1e9)*segmentDuration),
-				(terminalWidth/2)+(i+1)*(terminalWidth/2/markerCount),
+				(terminalWidth/2-1)+(i+1)*(terminalWidth/2/markerCount),
 				i+1,
 				j,
 				true,
