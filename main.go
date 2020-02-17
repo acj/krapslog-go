@@ -27,30 +27,37 @@ func main() {
 	}
 	defer file.Close()
 
-	timeFinder, err := NewTimeFinder(*requestedDateFormat)
-	if err != nil {
-		exitWithMessage("invalid timestamp format: %v", err)
+	if err := displaySparklineForLog(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress); err != nil {
+		exitWithMessage(err.Error())
 	}
 
-	var logReader io.Reader = file
-	if *displayProgress {
-		logReader, err = NewProgressReader(file, func(progressPercent float64) {
+	os.Exit(0)
+}
+
+func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool) error {
+	timeFinder, err := NewTimeFinder(dateFormat)
+	if err != nil {
+		return fmt.Errorf("invalid timestamp format: %v", err)
+	}
+
+	if shouldDisplayProgress {
+		r, err = NewProgressReader(r, func(progressPercent float64) {
 			fmt.Fprintf(os.Stderr, "\r%.f%%", progressPercent)
 			if progressPercent == 100.0 {
 				fmt.Fprintf(os.Stderr, "\r")
 			}
 		})
 		if err != nil {
-			exitWithMessage("failed to read log: %v", err)
+			return fmt.Errorf("failed to read log: %v", err)
 		}
 	}
 
-	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(logReader)
+	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(r)
 	if err != nil {
-		exitWithMessage("failed to process log: %v", err)
+		return fmt.Errorf("failed to process log: %v", err)
 	}
 	if len(timestampsFromLines) == 0 {
-		exitWithMessage("didn't find any lines with recognizable dates")
+		return fmt.Errorf("didn't find any lines with recognizable dates")
 	}
 
 	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
@@ -62,21 +69,21 @@ func main() {
 	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 
-	if *timeMarkerCount > 0 {
+	if timeMarkerCount > 0 {
 		firstTimestamp := timestampsFromLines[0]
 		lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
 		duration := lastTimestamp.Sub(firstTimestamp)
-		headerText := headerText(firstTimestamp.Add(duration/2), lastTimestamp, *timeMarkerCount/2, terminalWidth)
-		footerText := footerText(firstTimestamp, firstTimestamp.Add(duration/2), *timeMarkerCount/2, terminalWidth)
+		headerText := headerText(firstTimestamp.Add(duration/2), lastTimestamp, timeMarkerCount/2, terminalWidth)
+		footerText := footerText(firstTimestamp, firstTimestamp.Add(duration/2), timeMarkerCount/2, terminalWidth)
 
-		fmt.Print(headerText)
-		fmt.Println(sparkLine)
-		fmt.Print(footerText)
+		fmt.Fprint(w, headerText)
+		fmt.Fprintln(w, sparkLine)
+		fmt.Fprint(w, footerText)
 	} else {
-		fmt.Println(sparkLine)
+		fmt.Fprintln(w, sparkLine)
 	}
 
-	os.Exit(0)
+	return nil
 }
 
 func exitWithMessage(m string, args ...interface{}) {
