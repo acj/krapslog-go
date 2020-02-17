@@ -55,7 +55,8 @@ func main() {
 
 	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
 	if err != nil {
-		exitWithMessage("couldn't get terminal size: %v", err)
+		fmt.Fprintf(os.Stdout, "couldn't get terminal size (%v); defaulting to 80 characters\n", err)
+		terminalWidth = 80
 	}
 
 	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
