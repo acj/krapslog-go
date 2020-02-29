@@ -16,20 +16,19 @@ Nov 23 06:26:45 ip-10-1-1-1 haproxy[20128]: 10.1.1.15:60969 [23/Nov/2019:06:26:4
 Nov 23 06:26:46 ip-10-1-1-1 haproxy[20128]: 10.1.1.14:48539 [23/Nov/2019:06:26:46.730] public myapp/i-03b180605be4fa176 0/0/0/171/171 200 889/124142 - - ---- 6/6/4/0/0 0/0 {} {||123704|} "GET /ef9e0c85cc1c76d7dc777f5b19d7cb85478496e4 HTTP/1.1"
 Nov 23 06:26:47 ip-10-1-1-1 haproxy[20128]: 10.1.1.11:51847 [23/Nov/2019:06:26:47.886] public myapp/i-0aa566420409956d6 0/0/0/28/28 206 867/458 - - ---- 6/6/4/0/0 0/0 {bytes=0-0} {} "GET /3c7ace8c683adcad375a4d14995734ac0db08bb3 HTTP/1.1"
 Nov 23 06:26:48 ip-10-1-1-1 haproxy[20128]: 10.1.1.13:35554 [23/Nov/2019:06:26:48.866] public myapp/i-07f4205f35b4774b6 0/0/0/23/49 200 816/319662 - - ---- 5/5/3/0/0 0/0 {} {||319224|} "GET /b95db0578977cd32658fa28b386c0db67ab23ee7 HTTP/1.1"
-Nov 23 06:26:49 ip-10-1-1-1 haproxy[20128]: 10.1.1.12:38899 [23/Nov/2019:06:26:49.879] public myapp/i-08cb5309afd22e8c0 0/0/0/59/59 200 1000/112110 - - ---- 5/5/3/0/0 0/0 {} {||111672|} "GET /5314ca870ed0f5e48a71adca185e4ff7f1d9d80f HTTP/1.1
 Nov 23 06:26:49 ip-10-1-1-1 haproxy[20128]: 10.1.1.12:38899 [23/Nov/2019:06:26:49.879] public myapp/i-08cb5309afd22e8c0 0/0/0/59/59 200 1000/112110 - - ---- 5/5/3/0/0 0/0 {} {||111672|} "GET /5314ca870ed0f5e48a71adca185e4ff7f1d9d80f HTTP/1.1"
 `
 	log := strings.NewReader(lines)
 	output := &bytes.Buffer{}
 	displaySparklineForLog(log, output, apacheCommonLogFormatDate, 10, false)
 
-	expected := `                                                             Sat Nov 23 06:26:45
-                                                     Sat Nov 23 06:26:45       |
-                                             Sat Nov 23 06:26:45       |       |
-                                     Sat Nov 23 06:26:45       |       |       |
-                             Sat Nov 23 06:26:45       |       |       |       |
-                                               |       |       |       |       |
-▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁▅▁▁▁▁▁▁▁█▁▁▁▁▁▁▁
+	expected := `                                                      Sat Nov 23 06:26:45       
+                                              Sat Nov 23 06:26:45       |       
+                                      Sat Nov 23 06:26:45       |       |       
+                              Sat Nov 23 06:26:45       |       |       |       
+                      Sat Nov 23 06:26:45       |       |       |       |       
+                                        |       |       |       |       |       
+█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁
 |       |       |       |       |                                               
 |       |       |       |       Sat Nov 23 06:26:40                             
 |       |       |       Sat Nov 23 06:26:40                                     
@@ -43,10 +42,10 @@ Sat Nov 23 06:26:40
 		format := `incorrect output
 
 wanted (%d bytes):
-%s
+'%s'
 
 got (%d bytes):
-%s
+'%s'
 `
 		t.Errorf(format, len(expected), expected, len(actual), actual)
 	}
