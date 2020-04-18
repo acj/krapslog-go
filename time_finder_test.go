@@ -205,7 +205,7 @@ func TestTimeFinder_findFirstTimestamp(t *testing.T) {
 
 func TestNewTimeFinder(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		tf, err := NewTimeFinder(apacheCommonLogFormatDate)
+		tf, err := NewTimeFinder(apacheCommonLogFormatDate, 1)
 		if err != nil {
 			t.Errorf("unexpected NewTimeFinder() error = %v", err)
 			return
@@ -224,7 +224,7 @@ func TestNewTimeFinder(t *testing.T) {
 	})
 
 	t.Run("for garbage format, returns an error", func(t *testing.T) {
-		_, err := NewTimeFinder("garbage")
+		_, err := NewTimeFinder("garbage", 1)
 		if err == nil {
 			t.Error("NewTimeFinder: expected an error but didn't get one")
 			return

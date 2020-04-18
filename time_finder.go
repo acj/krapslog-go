@@ -6,23 +6,26 @@ import (
 	"io"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
 type TimeFinder struct {
+	parallelism int
 	timeFormat string
 	timeRegex  *regexp.Regexp
 }
 
-func NewTimeFinder(timeFormat string) (*TimeFinder, error) {
+func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
 	formatRegexString := convertTimeFormatToRegex(timeFormat)
 	formatRegex := regexp.MustCompile(formatRegexString)
 	if err := checkDateFormatForErrors(timeFormat); err != nil {
 		return nil, err
 	}
 	return &TimeFinder{
-		timeFormat: timeFormat,
-		timeRegex:  formatRegex,
+		parallelism: parallelism,
+		timeFormat:  timeFormat,
+		timeRegex:   formatRegex,
 	}, nil
 }
 
@@ -72,16 +75,46 @@ func convertTimeFormatToRegex(format string) string {
 
 func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
 	times := make([]time.Time, 0)
+
+	inC := make(chan string)
+	outC := make(chan time.Time)
+	var inWg sync.WaitGroup
+	for i := 0; i < tf.parallelism; i++ {
+		inWg.Add(1)
+		go func() {
+			defer inWg.Done()
+
+			for line := range inC {
+				t, err := tf.findFirstTimestamp(line)
+				if err != nil {
+					// TODO: Optionally allow exit on error
+					//return nil, err
+				}
+				outC <- t
+			}
+		}()
+	}
+
+	var outWg sync.WaitGroup
+	outWg.Add(1)
+	go func() {
+		defer outWg.Done()
+
+		for t := range outC {
+			times = append(times, t)
+		}
+	}()
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		line := scanner.Text()
-		t, err := tf.findFirstTimestamp(line)
-		if err != nil {
-			// TODO: Optionally allow exit on error
-			//return nil, err
-		}
-		times = append(times, t)
+		inC <- scanner.Text()
 	}
+	close(inC)
+
+	inWg.Wait()
+	close(outC)
+	outWg.Wait()
+
 	return times, nil
 }
 

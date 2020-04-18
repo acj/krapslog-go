@@ -35,7 +35,7 @@ func main() {
 }
 
 func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool) error {
-	timeFinder, err := NewTimeFinder(dateFormat)
+	timeFinder, err := NewTimeFinder(dateFormat, 8)
 	if err != nil {
 		return fmt.Errorf("invalid timestamp format: %v", err)
 	}
