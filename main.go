@@ -17,8 +17,8 @@ const (
 
 func main() {
 	var concurrency = flag.Int("concurrency", runtime.GOMAXPROCS(0), "number of log lines to process concurrently")
-	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var displayProgress = flag.Bool("progress", false, "display progress while scanning the log file")
+	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var timeMarkerCount = flag.Int("markers", 0, "number of time markers to display")
 	flag.Parse()
 
