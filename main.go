@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
+	"runtime"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 )
 
 func main() {
+	var concurrency = flag.Int("concurrency", runtime.GOMAXPROCS(0), "number of log lines to process concurrently")
 	var requestedDateFormat = flag.String("format", apacheCommonLogFormatDate, "date format to look for (see https://golang.org/pkg/time/#Time.Format)")
 	var displayProgress = flag.Bool("progress", false, "display progress while scanning the log file")
 	var timeMarkerCount = flag.Int("markers", 0, "number of time markers to display")
@@ -27,15 +29,15 @@ func main() {
 	}
 	defer file.Close()
 
-	if err := displaySparklineForLog(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress); err != nil {
+	if err := displaySparklineForLog(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress, *concurrency); err != nil {
 		exitWithMessage(err.Error())
 	}
 
 	os.Exit(0)
 }
 
-func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool) error {
-	timeFinder, err := NewTimeFinder(dateFormat, 8)
+func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool, concurrency int) error {
+	timeFinder, err := NewTimeFinder(dateFormat, concurrency)
 	if err != nil {
 		return fmt.Errorf("invalid timestamp format: %v", err)
 	}
