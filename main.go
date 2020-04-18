@@ -64,7 +64,7 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 
 	terminalWidth, _, err := terminal.GetSize(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "couldn't get terminal size (%v); defaulting to 80 characters\n", err)
+		fmt.Fprintf(os.Stderr, "couldn't get terminal size (%v); defaulting to 80 characters\n", err)
 		terminalWidth = 80
 	}
 
