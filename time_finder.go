@@ -74,46 +74,75 @@ func convertTimeFormatToRegex(format string) string {
 }
 
 func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
-	times := make([]time.Time, 0)
+	var wg sync.WaitGroup
+	lineChans := make([]chan string, tf.parallelism)
+	timeChans := make([]chan time.Time, tf.parallelism)
 
-	inC := make(chan string)
-	outC := make(chan time.Time)
-	var inWg sync.WaitGroup
+	for i, _ := range lineChans {
+		lineChans[i] = make(chan string, 1)
+		timeChans[i] = make(chan time.Time, 1)
+	}
+
+	// Stage 1: Produce lines
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		nextInChanIndex := 0
+		scanner := bufio.NewScanner(r)
+		for scanner.Scan() {
+			lineChans[nextInChanIndex] <- scanner.Text()
+			nextInChanIndex = (nextInChanIndex + 1) % tf.parallelism
+		}
+
+		for i := 0; i < tf.parallelism; i++ {
+			close(lineChans[i])
+		}
+	}()
+
+	// Stage 2: Fan out to convert lines into time structs. This is the expensive step.
 	for i := 0; i < tf.parallelism; i++ {
-		inWg.Add(1)
+		i := i
+		wg.Add(1)
 		go func() {
-			defer inWg.Done()
+			defer wg.Done()
+			defer close(timeChans[i])
 
-			for line := range inC {
+			for line := range lineChans[i] {
 				t, err := tf.findFirstTimestamp(line)
 				if err != nil {
-					// TODO: Optionally allow exit on error
-					//return nil, err
+					// Zero value will be ignored
+					timeChans[i] <- time.Time{}
+					continue
 				}
-				outC <- t
+				timeChans[i] <- t
 			}
 		}()
 	}
 
-	var outWg sync.WaitGroup
-	outWg.Add(1)
+	// Stage 3: Fan in to assemble list of timestamps, reading one line per channel to preserve line ordering
+	times := make([]time.Time, 0)
+	wg.Add(1)
 	go func() {
-		defer outWg.Done()
+		defer wg.Done()
 
-		for t := range outC {
-			times = append(times, t)
+		for {
+			drainedChannelCount := 0
+			for i := 0; i < tf.parallelism; i++ {
+				if t, ok := <-timeChans[i]; ok {
+					times = append(times, t)
+				} else {
+					drainedChannelCount++
+				}
+			}
+
+			// All inbound channels are drained, so we're done
+			if drainedChannelCount == tf.parallelism {
+				return
+			}
 		}
 	}()
 
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		inC <- scanner.Text()
-	}
-	close(inC)
-
-	inWg.Wait()
-	close(outC)
-	outWg.Wait()
+	wg.Wait()
 
 	return times, nil
 }

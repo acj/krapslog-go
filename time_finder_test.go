@@ -133,8 +133,9 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tf := &TimeFinder{
-				timeFormat: tt.fields.timeFormat,
-				timeRegex:  tt.fields.timeRegex,
+				parallelism: 1,
+				timeFormat:  tt.fields.timeFormat,
+				timeRegex:   tt.fields.timeRegex,
 			}
 			got, err := tf.extractTimestampFromEachLine(tt.args.r)
 			if (err != nil) != tt.wantErr {
