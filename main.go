@@ -25,12 +25,12 @@ func main() {
 	filename := flag.Arg(0)
 	file, err := os.Open(filename)
 	if err != nil {
-		exitWithMessage("error opening '%s': %v", filename, err)
+		exitWithErrorMessage("error opening '%s': %v", filename, err)
 	}
 	defer file.Close()
 
 	if err := displaySparklineForLog(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress, *concurrency); err != nil {
-		exitWithMessage(err.Error())
+		exitWithErrorMessage("couldn't generate sparkline: %v", err)
 	}
 
 	os.Exit(0)
@@ -88,7 +88,7 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 	return nil
 }
 
-func exitWithMessage(m string, args ...interface{}) {
+func exitWithErrorMessage(m string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, m, args...)
 	os.Exit(-1)
 }
