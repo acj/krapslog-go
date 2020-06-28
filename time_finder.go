@@ -67,10 +67,7 @@ func convertTimeFormatToRegex(format string) string {
 		"9", "\\d",
 	}
 
-	replacer := strings.NewReplacer(replaceSet...)
-	regex := replacer.Replace(format)
-
-	return regex
+	return strings.NewReplacer(replaceSet...).Replace(format)
 }
 
 func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
