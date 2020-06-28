@@ -22,6 +22,10 @@ func main() {
 	var timeMarkerCount = flag.Int("markers", 0, "number of time markers to display")
 	flag.Parse()
 
+	if flag.NArg() == 0 {
+		exitWithErrorMessage("no filename given")
+	}
+
 	filename := flag.Arg(0)
 	file, err := os.Open(filename)
 	if err != nil {
