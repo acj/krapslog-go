@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type stemAlignment int
+const (
+	stemAlignmentLeft = iota
+	stemAlignmentRight
+)
+
 func headerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount int, terminalWidth int) string {
 	// +1 to allow space for the bottom marker to have a one-line stem
 	header := make([][]byte, markerCount+1, markerCount+1)
@@ -25,7 +31,7 @@ func headerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 				(terminalWidth/2)+i*(terminalWidth/2/markerCount),
 				i+1,
 				j,
-				true,
+				stemAlignmentRight,
 			)
 		}
 	}
@@ -59,7 +65,7 @@ func footerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 				i*(terminalWidth/2/markerCount),
 				len(header)-(i+1),
 				j,
-				false,
+				stemAlignmentLeft,
 			)
 		}
 	}
@@ -73,11 +79,11 @@ func footerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount i
 	return displayHeader.String()
 }
 
-func renderLine(buf []byte, timestamp time.Time, horizontalOffset int, verticalOffset int, linesOffsetFromSparkline int, alignStemAtEndOfTime bool) {
+func renderLine(buf []byte, timestamp time.Time, horizontalOffset int, verticalOffset int, linesOffsetFromSparkline int, alignment stemAlignment) {
 	if verticalOffset == linesOffsetFromSparkline {
 		displayTime := timestamp.Format("Mon Jan 2 15:04:05")
 		startingOffset := horizontalOffset
-		if alignStemAtEndOfTime {
+		if alignment == stemAlignmentRight {
 			startingOffset -= len(displayTime) - 1
 		}
 		copy(buf[startingOffset:startingOffset+len(displayTime)], displayTime)

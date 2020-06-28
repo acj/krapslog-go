@@ -15,7 +15,7 @@ func Test_renderLine(t *testing.T) {
 			buf[0][j] = ' '
 		}
 
-		renderLine(buf[0], time.Time{}, 79, 0, 0, true)
+		renderLine(buf[0], time.Time{}, 79, 0, 0, stemAlignmentRight)
 
 		expected := []byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'M', 'o', 'n', ' ', 'J', 'a', 'n', ' ', '1', ' ', '0', '0', ':', '0', '0', ':', '0', '0'}
 		if bytes.Compare(expected, buf[0]) != 0 {
@@ -31,7 +31,7 @@ func Test_renderLine(t *testing.T) {
 			buf[0][j] = ' '
 		}
 
-		renderLine(buf[0], time.Time{}, width-1, 1, 0, true)
+		renderLine(buf[0], time.Time{}, width-1, 1, 0, stemAlignmentRight)
 
 		expected := []byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'}
 		if bytes.Compare(expected, buf[0]) != 0 {
@@ -47,8 +47,8 @@ func Test_renderLine(t *testing.T) {
 			buf[0][j] = ' '
 		}
 
-		renderLine(buf[0], time.Time{}, width-1, 2, 0, true)
-		renderLine(buf[0], time.Time{}, width-3, 2, 0, true)
+		renderLine(buf[0], time.Time{}, width-1, 2, 0, stemAlignmentRight)
+		renderLine(buf[0], time.Time{}, width-3, 2, 0, stemAlignmentRight)
 
 		expected := []byte{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|', ' ', '|'}
 		if bytes.Compare(expected, buf[0]) != 0 {
