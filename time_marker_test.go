@@ -57,7 +57,7 @@ func Test_timeStem(t *testing.T) {
 		ts.render(canvas, 5, stemAlignmentLeft)
 
 		actual := canvas.String()
-		expected := "Mon Jan 2 15:04:05" + strings.Repeat(" ", 2) + "\n"
+		expected := goAnsicTimeFormat + strings.Repeat(" ", 2) + "\n"
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
@@ -105,7 +105,7 @@ func Test_timeStem(t *testing.T) {
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
 		expected += "|" + strings.Repeat(" ", 19) + "\n"
-		expected += "Mon Jan 2 15:04:05" + strings.Repeat(" ", 2) + "\n"
+		expected += goAnsicTimeFormat + strings.Repeat(" ", 2) + "\n"
 
 		if actual != expected {
 			t.Errorf("incorrect canvas: expected '%s' (%d), got '%s' (%d)", expected, len(expected), actual, len(actual))
@@ -130,8 +130,8 @@ func Test_timeStem(t *testing.T) {
 		ts2.render(canvas, height-1, stemAlignmentLeft)
 
 		actual := canvas.String()
-		expected := "Mon Jan 2 15:04:05" + strings.Repeat(" ", 7) + "\n"
-		expected += "|    Mon Jan 2 15:04:05" + strings.Repeat(" ", width-18-5) + "\n"
+		expected := goAnsicTimeFormat + strings.Repeat(" ", 7) + "\n"
+		expected += "|    " + goAnsicTimeFormat + strings.Repeat(" ", width-18-5) + "\n"
 		expected += "|    |" + strings.Repeat(" ", width-5-1) + "\n"
 		expected += "|    |" + strings.Repeat(" ", width-5-1) + "\n"
 		expected += "|    |" + strings.Repeat(" ", width-5-1) + "\n"

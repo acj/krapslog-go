@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const goAnsicTimeFormat = "Mon Jan 2 15:04:05"
+
 type stemAlignment int
 
 const (
@@ -74,7 +76,7 @@ type timeMarker struct {
 func (ts timeMarker) render(canvas canvas, verticalOffset int, alignment stemAlignment) {
 	for i := 0; i < verticalOffset; i++ {
 		if i == verticalOffset-1 {
-			displayTime := ts.time.Format("Mon Jan 2 15:04:05")
+			displayTime := ts.time.Format(goAnsicTimeFormat)
 			startingOffset := ts.horizontalOffset
 			if alignment == stemAlignmentRight {
 				startingOffset -= len(displayTime) - 1
