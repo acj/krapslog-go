@@ -100,7 +100,7 @@ func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int,
 	}
 
 	offsets := timeStemOffsets(timeMarkerCount, terminalWidth)
-	durationBetweenOffsets := time.Duration(duration.Seconds() / int64(terminalWidth))
+	durationBetweenOffsets := time.Duration(duration.Nanoseconds() / int64(terminalWidth))
 
 	headerOffsets := offsets[footerMarkerCount:]
 	headerCanvas := renderHeader(headerOffsets, terminalWidth, firstTimestamp, durationBetweenOffsets)
@@ -122,7 +122,7 @@ func renderHeader(markerOffsets []int, terminalWidth int, firstTimestamp time.Ti
 
 		timeMarker{
 			horizontalOffset: horizontalOffset,
-			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+			time:             firstTimestamp.Add(time.Duration(horizontalOffset) * durationBetweenOffsets),
 		}.render(canvas, verticalOffset, stemAlignmentRight)
 	}
 	return canvas
@@ -140,7 +140,7 @@ func renderFooter(markerOffsets []int, terminalWidth int, firstTimestamp time.Ti
 
 		timeMarker{
 			horizontalOffset: horizontalOffset,
-			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+			time:             firstTimestamp.Add(time.Duration(horizontalOffset) * durationBetweenOffsets),
 		}.render(canvas, verticalOffset, stemAlignmentLeft)
 	}
 	return canvas
