@@ -100,7 +100,7 @@ func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int,
 	}
 
 	offsets := timeStemOffsets(timeMarkerCount, terminalWidth)
-	durationBetweenOffsets := time.Duration(duration.Seconds() / float64(timeMarkerCount))
+	durationBetweenOffsets := time.Duration(duration.Seconds() / int64(terminalWidth))
 
 	headerOffsets := offsets[footerMarkerCount:]
 	headerCanvas := renderHeader(headerOffsets, terminalWidth, firstTimestamp, durationBetweenOffsets)
