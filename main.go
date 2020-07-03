@@ -76,11 +76,7 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 
-	header := ""
-	footer := ""
-	if timeMarkerCount > 0 {
-		header, footer = renderHeaderAndFooter(timestampsFromLines, timeMarkerCount, terminalWidth)
-	}
+	header, footer := renderHeaderAndFooter(timestampsFromLines, timeMarkerCount, terminalWidth)
 
 	fmt.Fprint(w, header)
 	fmt.Fprintln(w, sparkLine)
@@ -90,6 +86,10 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 }
 
 func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int, terminalWidth int) (string, string) {
+	if timeMarkerCount == 0 {
+		return "", ""
+	}
+
 	firstTimestamp := timestampsFromLines[0]
 	lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
 	duration := lastTimestamp.Sub(firstTimestamp)
