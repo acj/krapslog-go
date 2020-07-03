@@ -76,46 +76,60 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
 	sparkLine := spark.Line(linesPerCharacter)
 
+	header := ""
+	footer := ""
 	if timeMarkerCount > 0 {
-		firstTimestamp := timestampsFromLines[0]
-		lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
-		duration := lastTimestamp.Sub(firstTimestamp)
-		headerMarkerCount := timeMarkerCount / 2
-		footerMarkerCount := timeMarkerCount / 2
-		if timeMarkerCount%2 != 0 {
-			// If we have an odd number of markers, then the header has one more marker than the footer
-			footerMarkerCount++
-		}
-
-		offsets := timeStemOffsets(timeMarkerCount, terminalWidth)
-		durationBetweenOffsets := time.Duration(duration.Seconds() / float64(timeMarkerCount))
-
-		headerOffsets := offsets[footerMarkerCount:]
-		headerCanvas := newCanvas(canvasTypeHeader, terminalWidth, headerMarkerCount+1)
-		for verticalOffset, horizontalOffset := range headerOffsets {
-			timeMarker{
-				horizontalOffset: horizontalOffset,
-				time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
-			}.render(headerCanvas, verticalOffset+2, stemAlignmentRight)
-		}
-
-		footerOffsets := offsets[0:footerMarkerCount]
-		footerCanvas := newCanvas(canvasTypeFooter, terminalWidth, footerMarkerCount+1)
-		for verticalOffset, horizontalOffset := range footerOffsets {
-			timeMarker{
-				horizontalOffset: horizontalOffset,
-				time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
-			}.render(footerCanvas, len(footerOffsets)-verticalOffset+1, stemAlignmentLeft)
-		}
-
-		fmt.Fprint(w, headerCanvas)
-		fmt.Fprintln(w, sparkLine)
-		fmt.Fprint(w, footerCanvas)
-	} else {
-		fmt.Fprintln(w, sparkLine)
+		header, footer = renderHeaderAndFooter(timestampsFromLines, timeMarkerCount, terminalWidth)
 	}
 
+	fmt.Fprint(w, header)
+	fmt.Fprintln(w, sparkLine)
+	fmt.Fprint(w, footer)
+
 	return nil
+}
+
+func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int, terminalWidth int) (string, string) {
+	firstTimestamp := timestampsFromLines[0]
+	lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
+	duration := lastTimestamp.Sub(firstTimestamp)
+	footerMarkerCount := timeMarkerCount / 2
+	if timeMarkerCount%2 != 0 {
+		// If we have an odd number of markers, then the header has one more marker than the footer
+		footerMarkerCount++
+	}
+
+	offsets := timeStemOffsets(timeMarkerCount, terminalWidth)
+	durationBetweenOffsets := time.Duration(duration.Seconds() / float64(timeMarkerCount))
+
+	headerOffsets := offsets[footerMarkerCount:]
+	headerCanvas := renderHeader(headerOffsets, terminalWidth, firstTimestamp, durationBetweenOffsets)
+
+	footerOffsets := offsets[0:footerMarkerCount]
+	footerCanvas := renderFooter(footerOffsets, terminalWidth, firstTimestamp, durationBetweenOffsets)
+	return headerCanvas.String(), footerCanvas.String()
+}
+
+func renderHeader(markerOffsets []int, terminalWidth int, firstTimestamp time.Time, durationBetweenOffsets time.Duration) canvas {
+	canvas := newCanvas(canvasTypeHeader, terminalWidth, len(markerOffsets)+1)
+	for verticalOffset, horizontalOffset := range headerOffsets {
+		timeMarker{
+			horizontalOffset: horizontalOffset,
+			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+		}.render(canvas, verticalOffset+2, stemAlignmentRight)
+	}
+	return canvas
+}
+
+func renderFooter(markerOffsets []int, terminalWidth int, firstTimestamp time.Time, durationBetweenOffsets time.Duration) canvas {
+	canvas := newCanvas(canvasTypeFooter, terminalWidth, len(markerOffsets)+1)
+	for verticalOffset, horizontalOffset := range footerOffsets {
+		timeMarker{
+			horizontalOffset: horizontalOffset,
+			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+		}.render(canvas, len(markerOffsets)-verticalOffset+1, stemAlignmentLeft)
+	}
+	return canvas
 }
 
 func exitWithErrorMessage(m string, args ...interface{}) {
