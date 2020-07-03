@@ -12,8 +12,8 @@ import (
 
 type TimeFinder struct {
 	parallelism int
-	timeFormat string
-	timeRegex  *regexp.Regexp
+	timeFormat  string
+	timeRegex   *regexp.Regexp
 }
 
 func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
