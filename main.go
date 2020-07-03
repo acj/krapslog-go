@@ -112,22 +112,36 @@ func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int,
 
 func renderHeader(markerOffsets []int, terminalWidth int, firstTimestamp time.Time, durationBetweenOffsets time.Duration) canvas {
 	canvas := newCanvas(canvasTypeHeader, terminalWidth, len(markerOffsets)+1)
-	for verticalOffset, horizontalOffset := range headerOffsets {
+	needStackedMarkers := (len(firstTimestamp.Format(goAnsicTimeFormat)) + 1) * len(markerOffsets) >= (terminalWidth/2)
+	for verticalOffset, horizontalOffset := range markerOffsets {
+		if needStackedMarkers {
+			verticalOffset += 2
+		} else {
+			verticalOffset = 2
+		}
+
 		timeMarker{
 			horizontalOffset: horizontalOffset,
 			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
-		}.render(canvas, verticalOffset+2, stemAlignmentRight)
+		}.render(canvas, verticalOffset, stemAlignmentRight)
 	}
 	return canvas
 }
 
 func renderFooter(markerOffsets []int, terminalWidth int, firstTimestamp time.Time, durationBetweenOffsets time.Duration) canvas {
 	canvas := newCanvas(canvasTypeFooter, terminalWidth, len(markerOffsets)+1)
-	for verticalOffset, horizontalOffset := range footerOffsets {
+	needStackedMarkers := (len(firstTimestamp.Format(goAnsicTimeFormat)) + 1) * len(markerOffsets) >= (terminalWidth/2)
+	for verticalOffset, horizontalOffset := range markerOffsets {
+		if needStackedMarkers {
+			verticalOffset = len(markerOffsets)-verticalOffset+1
+		} else {
+			verticalOffset = 2
+		}
+
 		timeMarker{
 			horizontalOffset: horizontalOffset,
 			time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
-		}.render(canvas, len(markerOffsets)-verticalOffset+1, stemAlignmentLeft)
+		}.render(canvas, verticalOffset, stemAlignmentLeft)
 	}
 	return canvas
 }
