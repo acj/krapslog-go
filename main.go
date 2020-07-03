@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"time"
 )
 
 const (
@@ -79,12 +80,37 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 		firstTimestamp := timestampsFromLines[0]
 		lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
 		duration := lastTimestamp.Sub(firstTimestamp)
-		headerText := headerText(firstTimestamp.Add(duration/2), lastTimestamp, timeMarkerCount/2, terminalWidth)
-		footerText := footerText(firstTimestamp, firstTimestamp.Add(duration/2), timeMarkerCount/2, terminalWidth)
+		headerMarkerCount := timeMarkerCount / 2
+		footerMarkerCount := timeMarkerCount / 2
+		if timeMarkerCount%2 != 0 {
+			// If we have an odd number of markers, then the header has one more marker than the footer
+			footerMarkerCount++
+		}
 
-		fmt.Fprint(w, headerText)
+		offsets := timeStemOffsets(timeMarkerCount, terminalWidth)
+		durationBetweenOffsets := time.Duration(duration.Seconds() / float64(timeMarkerCount))
+
+		headerOffsets := offsets[footerMarkerCount:]
+		headerCanvas := newCanvas(canvasTypeHeader, terminalWidth, headerMarkerCount+1)
+		for verticalOffset, horizontalOffset := range headerOffsets {
+			timeMarker{
+				horizontalOffset: horizontalOffset,
+				time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+			}.render(headerCanvas, verticalOffset+2, stemAlignmentRight)
+		}
+
+		footerOffsets := offsets[0:footerMarkerCount]
+		footerCanvas := newCanvas(canvasTypeFooter, terminalWidth, footerMarkerCount+1)
+		for verticalOffset, horizontalOffset := range footerOffsets {
+			timeMarker{
+				horizontalOffset: horizontalOffset,
+				time:             firstTimestamp.Add(time.Duration(horizontalOffset*1e9) * durationBetweenOffsets),
+			}.render(footerCanvas, len(footerOffsets)-verticalOffset+1, stemAlignmentLeft)
+		}
+
+		fmt.Fprint(w, headerCanvas)
 		fmt.Fprintln(w, sparkLine)
-		fmt.Fprint(w, footerText)
+		fmt.Fprint(w, footerCanvas)
 	} else {
 		fmt.Fprintln(w, sparkLine)
 	}

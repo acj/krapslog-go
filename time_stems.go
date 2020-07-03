@@ -1,93 +1,107 @@
 package main
 
 import (
+	"log"
+	"math"
 	"strings"
 	"time"
 )
 
 type stemAlignment int
+
 const (
 	stemAlignmentLeft = iota
 	stemAlignmentRight
 )
 
-func headerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount int, terminalWidth int) string {
-	// +1 to allow space for the bottom marker to have a one-line stem
-	header := make([][]byte, markerCount+1, markerCount+1)
-	for i := 0; i < len(header); i++ {
-		header[i] = make([]byte, terminalWidth, terminalWidth)
-		for j := 0; j < len(header[i]); j++ {
-			header[i][j] = ' '
-		}
-	}
-	totalDuration := lastTimestamp.Sub(firstTimestamp).Seconds()
-	segmentDuration := time.Duration(totalDuration / float64(markerCount))
+type canvasType int
 
-	for i := 0; i < markerCount; i++ {
-		for j := 0; j < len(header); j++ {
-			renderLine(
-				header[j],
-				firstTimestamp.Add(time.Duration(j*1e9)*segmentDuration),
-				(terminalWidth/2)+i*(terminalWidth/2/markerCount),
-				i+1,
-				j,
-				stemAlignmentRight,
-			)
+const (
+	canvasTypeHeader = iota
+	canvasTypeFooter
+)
+
+type canvas struct {
+	_type canvasType
+	buf   [][]byte
+}
+
+func newCanvas(canvasType canvasType, width, height int) canvas {
+	buf := make([][]byte, height, height)
+	for i := 0; i < len(buf); i++ {
+		buf[i] = make([]byte, width, width)
+		for j := 0; j < len(buf[i]); j++ {
+			buf[i][j] = ' '
 		}
 	}
 
+	return canvas{
+		buf:   buf,
+		_type: canvasType,
+	}
+}
+
+func (c canvas) put(row int, col int, text []byte) {
+	copy(c.buf[row][col:col+len(text)], text)
+}
+
+func (c canvas) String() string {
 	var displayHeader strings.Builder
-	for i := len(header) - 1; i >= 0; i-- {
-		displayHeader.Write(header[i])
-		displayHeader.WriteByte('\n')
+	switch c._type {
+	case canvasTypeHeader:
+		// Display timestamps at the top of the stems
+		for i := len(c.buf) - 1; i >= 0; i-- {
+			displayHeader.Write(c.buf[i])
+			displayHeader.WriteByte('\n')
+		}
+	case canvasTypeFooter:
+		// Display timestamps at the bottom of the stems
+		for i := 0; i < len(c.buf); i++ {
+			displayHeader.Write(c.buf[i])
+			displayHeader.WriteByte('\n')
+		}
+	default:
+		log.Fatalf("unrecognized canvas type: %d", c._type)
 	}
-
 	return displayHeader.String()
 }
 
-func footerText(firstTimestamp time.Time, lastTimestamp time.Time, markerCount int, terminalWidth int) string {
-	// +1 to allow space for the top marker to have a one-line stem
-	header := make([][]byte, markerCount+1, markerCount+1)
-	for i := 0; i < len(header); i++ {
-		header[i] = make([]byte, terminalWidth, terminalWidth)
-		for j := 0; j < len(header[i]); j++ {
-			header[i][j] = ' '
-		}
-	}
-	totalDuration := lastTimestamp.Sub(firstTimestamp).Seconds()
-	segmentDuration := time.Duration(totalDuration / float64(markerCount))
-
-	for i := 0; i < markerCount; i++ {
-		for j := 0; j < len(header); j++ {
-			renderLine(
-				header[j],
-				firstTimestamp.Add(time.Duration(i*1e9)*segmentDuration),
-				i*(terminalWidth/2/markerCount),
-				len(header)-(i+1),
-				j,
-				stemAlignmentLeft,
-			)
-		}
-	}
-
-	var displayHeader strings.Builder
-	for i := 0; i < len(header); i++ {
-		displayHeader.Write(header[i])
-		displayHeader.WriteByte('\n')
-	}
-
-	return displayHeader.String()
+type timeMarker struct {
+	horizontalOffset int
+	time             time.Time
 }
 
-func renderLine(buf []byte, timestamp time.Time, horizontalOffset int, verticalOffset int, linesOffsetFromSparkline int, alignment stemAlignment) {
-	if verticalOffset == linesOffsetFromSparkline {
-		displayTime := timestamp.Format("Mon Jan 2 15:04:05")
-		startingOffset := horizontalOffset
-		if alignment == stemAlignmentRight {
-			startingOffset -= len(displayTime) - 1
+func (ts timeMarker) render(canvas canvas, verticalOffset int, alignment stemAlignment) {
+	for i := 0; i < verticalOffset; i++ {
+		if i == verticalOffset-1 {
+			displayTime := ts.time.Format("Mon Jan 2 15:04:05")
+			startingOffset := ts.horizontalOffset
+			if alignment == stemAlignmentRight {
+				startingOffset -= len(displayTime) - 1
+			}
+			canvas.put(i, startingOffset, []byte(displayTime))
+		} else {
+			canvas.put(i, ts.horizontalOffset, []byte{'|'})
 		}
-		copy(buf[startingOffset:startingOffset+len(displayTime)], displayTime)
-	} else if verticalOffset > linesOffsetFromSparkline {
-		buf[horizontalOffset] = '|'
 	}
+}
+
+func timeStemOffsets(markerCount, terminalWidth int) []int {
+	var offsets []int
+
+	// Always show a marker at the left edge
+	offsets = append(offsets, 0)
+
+	// Divide the non-edge offsets into equally sized segments, placing a marker between them
+	skip := float64(terminalWidth-2) / float64(markerCount-1)
+	currentOffset := skip
+	for i := 0; i < markerCount-2; i++ {
+		offsets = append(offsets, int(math.Ceil(currentOffset))%terminalWidth)
+		currentOffset += skip
+	}
+
+	// Always show a marker at the right edge
+	offsets = append(offsets, terminalWidth-1)
+
+	return offsets
 }
