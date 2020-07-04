@@ -21,6 +21,7 @@ type TimeFinder struct {
 	timeRegex   *regexp.Regexp
 }
 
+// NewTimeFinder constructs a new TimeFinder instance. It returns an error if the time format is invalid.
 func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
 	formatRegexString := convertTimeFormatToRegex(timeFormat)
 	formatRegex := regexp.MustCompile(formatRegexString)
@@ -34,7 +35,9 @@ func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
 	}, nil
 }
 
-func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
+// ExtractTimestampFromEachLine scans each line of the reader to find a timestamp.  It returns a slice of all the
+// timestamps that were found. If no timestamp is found, then the line is skipped.
+func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) []time.Time {
 	var wg sync.WaitGroup
 	lineChans := make([]chan string, tf.parallelism)
 	timeChans := make([]chan time.Time, tf.parallelism)
