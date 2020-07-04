@@ -105,7 +105,7 @@ func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) ([]time.Time, er
 
 	wg.Wait()
 
-	return times, nil
+	return times
 }
 
 func checkDateFormatForErrors(dateFormat string) error {

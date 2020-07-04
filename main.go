@@ -60,10 +60,7 @@ func displaySparkline(r io.Reader, w io.Writer, dateFormat string, timeMarkerCou
 		}
 	}
 
-	timestampsFromLines, err := timeFinder.ExtractTimestampFromEachLine(r)
-	if err != nil {
-		return fmt.Errorf("failed to process log: %v", err)
-	}
+	timestampsFromLines := timeFinder.ExtractTimestampFromEachLine(r)
 	if len(timestampsFromLines) == 0 {
 		return fmt.Errorf("didn't find any lines with recognizable dates")
 	}
