@@ -1,4 +1,4 @@
-package main
+package timefinder
 
 import (
 	"bufio"
@@ -8,6 +8,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+)
+
+const (
+	apacheCommonLogFormatDate = "02/Jan/2006:15:04:05.000"
+	goAnsicDateFormat = "Mon Jan 2 15:04:05 2006"
 )
 
 type TimeFinder struct {
@@ -29,48 +34,7 @@ func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
 	}, nil
 }
 
-func checkDateFormatForErrors(dateFormat string) error {
-	canonicalTime, err := time.Parse(time.ANSIC, goAnsicDateFormat)
-	if err != nil {
-		return fmt.Errorf("couldn't parse canonical time: %v", err)
-	}
-	t, err := time.Parse(dateFormat, dateFormat)
-	if err != nil || t != canonicalTime {
-		errorText := fmt.Sprintf("invalid date/time format '%s'", dateFormat)
-
-		if err != nil {
-			errorText += fmt.Sprintf(": %v", err)
-		}
-
-		return fmt.Errorf("%s\n\nThe format must include year, day, and time. Please follow the format described in https://golang.org/pkg/time/#Time.Format\n", errorText)
-	}
-
-	return nil
-}
-
-func convertTimeFormatToRegex(format string) string {
-	replaceSet := []string{
-		".", "\\.",
-		"2006", "\\d{4}",
-		"06", "\\d{2}",
-		"Jan", "[A-Za-z]{3}",
-		"January", "[A-Za-z]{3,4,5,6,7,8,9}",
-		"0", "\\d",
-		"1", "\\d",
-		"2", "\\d",
-		"3", "\\d",
-		"4", "\\d",
-		"5", "\\d",
-		"6", "\\d",
-		"7", "\\d",
-		"8", "\\d",
-		"9", "\\d",
-	}
-
-	return strings.NewReplacer(replaceSet...).Replace(format)
-}
-
-func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
+func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) ([]time.Time, error) {
 	var wg sync.WaitGroup
 	lineChans := make([]chan string, tf.parallelism)
 	timeChans := make([]chan time.Time, tf.parallelism)
@@ -142,6 +106,47 @@ func (tf *TimeFinder) extractTimestampFromEachLine(r io.Reader) ([]time.Time, er
 	wg.Wait()
 
 	return times, nil
+}
+
+func checkDateFormatForErrors(dateFormat string) error {
+	canonicalTime, err := time.Parse(time.ANSIC, goAnsicDateFormat)
+	if err != nil {
+		return fmt.Errorf("couldn't parse canonical time: %v", err)
+	}
+	t, err := time.Parse(dateFormat, dateFormat)
+	if err != nil || t != canonicalTime {
+		errorText := fmt.Sprintf("invalid date/time format '%s'", dateFormat)
+
+		if err != nil {
+			errorText += fmt.Sprintf(": %v", err)
+		}
+
+		return fmt.Errorf("%s\n\nThe format must include year, day, and time. Please follow the format described in https://golang.org/pkg/time/#Time.Format\n", errorText)
+	}
+
+	return nil
+}
+
+func convertTimeFormatToRegex(format string) string {
+	replaceSet := []string{
+		".", "\\.",
+		"2006", "\\d{4}",
+		"06", "\\d{2}",
+		"Jan", "[A-Za-z]{3}",
+		"January", "[A-Za-z]{3,4,5,6,7,8,9}",
+		"0", "\\d",
+		"1", "\\d",
+		"2", "\\d",
+		"3", "\\d",
+		"4", "\\d",
+		"5", "\\d",
+		"6", "\\d",
+		"7", "\\d",
+		"8", "\\d",
+		"9", "\\d",
+	}
+
+	return strings.NewReplacer(replaceSet...).Replace(format)
 }
 
 func (tf *TimeFinder) findFirstTimestamp(s string) (time.Time, error) {

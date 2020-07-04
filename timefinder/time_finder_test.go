@@ -1,6 +1,7 @@
-package main
+package timefinder
 
 import (
+	"github.com/acj/krapslog/internal/test"
 	"io"
 	"reflect"
 	"regexp"
@@ -126,7 +127,7 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 			args: args{
 				r: strings.NewReader(strings.Repeat("haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1\n", 2)),
 			},
-			want:    repeatTime(parseTime(sampleApacheCommonLogFormatTimestamp), 2),
+			want:    test.RepeatTime(parseTime(sampleApacheCommonLogFormatTimestamp), 2),
 			wantErr: false,
 		},
 	}
@@ -137,7 +138,7 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 				timeFormat:  tt.fields.timeFormat,
 				timeRegex:   tt.fields.timeRegex,
 			}
-			got, err := tf.extractTimestampFromEachLine(tt.args.r)
+			got, err := tf.ExtractTimestampFromEachLine(tt.args.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("extractTimestampFromEachLine() error = %v, wantErr %v", err, tt.wantErr)
 				return

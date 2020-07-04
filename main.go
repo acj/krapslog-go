@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/acj/krapslog/timefinder"
 	"github.com/joliv/spark"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
@@ -42,7 +43,7 @@ func main() {
 }
 
 func displaySparkline(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool, concurrency int) error {
-	timeFinder, err := NewTimeFinder(dateFormat, concurrency)
+	timeFinder, err := timefinder.NewTimeFinder(dateFormat, concurrency)
 	if err != nil {
 		return fmt.Errorf("invalid timestamp format: %v", err)
 	}
@@ -59,7 +60,7 @@ func displaySparkline(r io.Reader, w io.Writer, dateFormat string, timeMarkerCou
 		}
 	}
 
-	timestampsFromLines, err := timeFinder.extractTimestampFromEachLine(r)
+	timestampsFromLines, err := timeFinder.ExtractTimestampFromEachLine(r)
 	if err != nil {
 		return fmt.Errorf("failed to process log: %v", err)
 	}

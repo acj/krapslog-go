@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/acj/krapslog/internal/test"
 	"reflect"
 	"testing"
 	"time"
@@ -21,7 +22,7 @@ func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 				timestampsFromLines: []time.Time{},
 				terminalWidth:       5,
 			},
-			want: repeatFloat(0, 5),
+			want: test.RepeatFloat(0, 5),
 		},
 		{
 			name: "one timestamp", args: args{
@@ -58,26 +59,3 @@ func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 	}
 }
 
-func repeatFloat(num float64, count int) []float64 {
-	a := make([]float64, count, count)
-	for idx := range a {
-		a[idx] = num
-	}
-	return a
-}
-
-func repeatInt64(num int64, count int) []int64 {
-	a := make([]int64, count, count)
-	for idx := range a {
-		a[idx] = num
-	}
-	return a
-}
-
-func repeatTime(t time.Time, count int) []time.Time {
-	a := make([]time.Time, count, count)
-	for idx := range a {
-		a[idx] = t
-	}
-	return a
-}
