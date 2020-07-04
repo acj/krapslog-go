@@ -13,3 +13,5 @@
 
 .idea
 krapslog
+*.log
+.DS_Store
