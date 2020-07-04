@@ -9,7 +9,7 @@ When troubleshooting a problem with a production service, I often need to get th
 ## Installing
 
 ```
-$ go get github.com/acj/krapslog
+$ go get -u github.com/acj/krapslog
 ```
 
 ## Usage
