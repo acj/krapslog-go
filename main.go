@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/acj/krapslog/timefinder"
-	"github.com/joliv/spark"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
@@ -72,7 +71,7 @@ func displaySparkline(r io.Reader, w io.Writer, dateFormat string, timeMarkerCou
 	}
 
 	logLineCountPerCharacter := binTimestamps(timestampsFromLines, terminalWidth)
-	sparkLine := spark.Line(logLineCountPerCharacter)
+	sparkLine := Line(logLineCountPerCharacter)
 
 	header, footer := renderHeaderAndFooter(timestampsFromLines, timeMarkerCount, terminalWidth)
 
