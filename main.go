@@ -34,14 +34,14 @@ func main() {
 	}
 	defer file.Close()
 
-	if err := displaySparklineForLog(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress, *concurrency); err != nil {
+	if err := displaySparkline(file, os.Stdout, *requestedDateFormat, *timeMarkerCount, *displayProgress, *concurrency); err != nil {
 		exitWithErrorMessage("couldn't generate sparkline: %v", err)
 	}
 
 	os.Exit(0)
 }
 
-func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool, concurrency int) error {
+func displaySparkline(r io.Reader, w io.Writer, dateFormat string, timeMarkerCount int, shouldDisplayProgress bool, concurrency int) error {
 	timeFinder, err := NewTimeFinder(dateFormat, concurrency)
 	if err != nil {
 		return fmt.Errorf("invalid timestamp format: %v", err)
@@ -73,8 +73,8 @@ func displaySparklineForLog(r io.Reader, w io.Writer, dateFormat string, timeMar
 		terminalWidth = 80
 	}
 
-	linesPerCharacter := binTimestampsToFitLineWidth(timestampsFromLines, terminalWidth)
-	sparkLine := spark.Line(linesPerCharacter)
+	logLineCountPerCharacter := binTimestamps(timestampsFromLines, terminalWidth)
+	sparkLine := spark.Line(logLineCountPerCharacter)
 
 	header, footer := renderHeaderAndFooter(timestampsFromLines, timeMarkerCount, terminalWidth)
 

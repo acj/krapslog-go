@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func binTimestampsToFitLineWidth(timesFromLines []time.Time, bucketCount int) []float64 {
+func binTimestamps(timesFromLines []time.Time, bucketCount int) []float64 {
 	timestampsFromLines := make([]int64, len(timesFromLines), len(timesFromLines))
 	linesPerBucket := make([]float64, bucketCount, bucketCount)
 

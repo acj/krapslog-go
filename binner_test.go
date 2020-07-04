@@ -51,8 +51,8 @@ func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := binTimestampsToFitLineWidth(tt.args.timestampsFromLines, tt.args.terminalWidth); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("binTimestampsToFitLineWidth() = %v, want %v", got, tt.want)
+			if got := binTimestamps(tt.args.timestampsFromLines, tt.args.terminalWidth); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("binTimestamps() = %v, want %v", got, tt.want)
 			}
 		})
 	}

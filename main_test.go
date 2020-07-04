@@ -20,7 +20,7 @@ Nov 23 06:26:49 ip-10-1-1-1 haproxy[20128]: 10.1.1.12:38899 [23/Nov/2019:06:26:4
 `
 	logFile := strings.NewReader(lines)
 	output := &bytes.Buffer{}
-	displaySparklineForLog(logFile, output, apacheCommonLogFormatDate, 10, false, 1)
+	displaySparkline(logFile, output, apacheCommonLogFormatDate, 10, false, 1)
 
 	expected := `                                                             Sat Nov 23 06:26:49
                                                     Sat Nov 23 06:26:48        |
