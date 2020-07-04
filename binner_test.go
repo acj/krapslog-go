@@ -58,4 +58,3 @@ func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 		})
 	}
 }
-
