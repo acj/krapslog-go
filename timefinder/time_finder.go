@@ -11,12 +11,12 @@ import (
 
 const (
 	apacheCommonLogFormatDate = "02/Jan/2006:15:04:05.000"
-	goAnsicDateFormat = "Mon Jan 2 15:04:05 2006"
+	goAnsicDateFormat         = "Mon Jan 2 15:04:05 2006"
 )
 
 type TimeFinder struct {
-	timeFormat  string
-	timeRegex   *regexp.Regexp
+	timeFormat string
+	timeRegex  *regexp.Regexp
 }
 
 // NewTimeFinder constructs a new TimeFinder instance. It returns an error if the time format is invalid.
@@ -30,8 +30,8 @@ func NewTimeFinder(timeFormat string) (*TimeFinder, error) {
 		return nil, err
 	}
 	return &TimeFinder{
-		timeFormat:  timeFormat,
-		timeRegex:   formatRegex,
+		timeFormat: timeFormat,
+		timeRegex:  formatRegex,
 	}, nil
 }
 
