@@ -22,7 +22,10 @@ type TimeFinder struct {
 // NewTimeFinder constructs a new TimeFinder instance. It returns an error if the time format is invalid.
 func NewTimeFinder(timeFormat string) (*TimeFinder, error) {
 	formatRegexString := convertTimeFormatToRegex(timeFormat)
-	formatRegex := regexp.MustCompile(formatRegexString)
+	formatRegex, err := regexp.Compile(formatRegexString)
+	if err != nil {
+		return nil, err
+	}
 	if err := checkDateFormatForErrors(timeFormat); err != nil {
 		return nil, err
 	}
