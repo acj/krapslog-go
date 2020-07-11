@@ -2,13 +2,13 @@ package main
 
 import "time"
 
-func renderHeaderAndFooter(timestampsFromLines []time.Time, timeMarkerCount int, terminalWidth int) (string, string) {
+func renderHeaderAndFooter(timestampsFromLines []int64, timeMarkerCount int, terminalWidth int) (string, string) {
 	if timeMarkerCount == 0 {
 		return "", ""
 	}
 
-	firstTimestamp := timestampsFromLines[0]
-	lastTimestamp := timestampsFromLines[len(timestampsFromLines)-1]
+	firstTimestamp := time.Unix(timestampsFromLines[0], 0).UTC()
+	lastTimestamp := time.Unix(timestampsFromLines[len(timestampsFromLines)-1], 0).UTC()
 	duration := lastTimestamp.Sub(firstTimestamp)
 	footerMarkerCount := timeMarkerCount / 2
 	if timeMarkerCount%2 != 0 {

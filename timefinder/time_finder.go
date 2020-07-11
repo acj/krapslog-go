@@ -43,7 +43,7 @@ func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) []int64 {
 		if err != nil {
 			continue
 		}
-		times = append(times, t.Unix())
+		times = append(times, t.UTC().Unix())
 	}
 
 	return times

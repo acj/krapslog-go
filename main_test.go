@@ -22,16 +22,16 @@ Nov 23 06:26:49 ip-10-1-1-1 haproxy[20128]: 10.1.1.12:38899 [23/Nov/2019:06:26:4
 	output := &bytes.Buffer{}
 	displaySparkline(logFile, output, apacheCommonLogFormatDate, 10, false)
 
-	expected := `                                                             Sat Nov 23 06:26:49
-                                                    Sat Nov 23 06:26:48        |
-                                           Sat Nov 23 06:26:47        |        |
-                                  Sat Nov 23 06:26:46        |        |        |
-                          Sat Nov 23 06:26:45       |        |        |        |
+	expected := `                                                             Sat Nov 23 06:26:48
+                                                    Sat Nov 23 06:26:47        |
+                                           Sat Nov 23 06:26:46        |        |
+                                  Sat Nov 23 06:26:45        |        |        |
+                          Sat Nov 23 06:26:44       |        |        |        |
                                             |       |        |        |        |
 █▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁█▁▁▁▁▁▁▁
 |        |        |       |        |                                            
-|        |        |       |        Sat Nov 23 06:26:44                          
-|        |        |       Sat Nov 23 06:26:43                                   
+|        |        |       |        Sat Nov 23 06:26:43                          
+|        |        |       Sat Nov 23 06:26:42                                   
 |        |        Sat Nov 23 06:26:42                                           
 |        Sat Nov 23 06:26:41                                                    
 Sat Nov 23 06:26:40                                                             

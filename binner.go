@@ -1,11 +1,6 @@
 package main
 
-import (
-	"time"
-)
-
-func binTimestamps(timesFromLines []time.Time, bucketCount int) []float64 {
-	timestampsFromLines := make([]int64, len(timesFromLines), len(timesFromLines))
+func binTimestamps(timesFromLines []int64, bucketCount int) []float64 {
 	linesPerBucket := make([]float64, bucketCount, bucketCount)
 
 	switch len(timesFromLines) {
@@ -16,14 +11,10 @@ func binTimestamps(timesFromLines []time.Time, bucketCount int) []float64 {
 		return linesPerBucket
 	}
 
-	for index, t := range timesFromLines {
-		timestampsFromLines[index] = t.Unix()
-	}
-
-	firstTime := timestampsFromLines[0]
-	lastTime := timestampsFromLines[len(timestampsFromLines)-1]
+	firstTime := timesFromLines[0]
+	lastTime := timesFromLines[len(timesFromLines)-1]
 	spread := lastTime - firstTime + 1
-	for _, lineUnixTime := range timestampsFromLines {
+	for _, lineUnixTime := range timesFromLines {
 		if lineUnixTime < firstTime {
 			continue
 		}

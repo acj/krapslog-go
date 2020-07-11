@@ -106,10 +106,10 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 		r io.Reader
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []time.Time
+		name   string
+		fields fields
+		args   args
+		want   []int64
 	}{
 		{
 			name:   "for single line, returns single timestamp",
@@ -117,7 +117,7 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 			args: args{
 				r: strings.NewReader(`haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} "GET /foobarbaz.html HTTP/1.1\n`),
 			},
-			want:    []time.Time{parseTime(sampleApacheCommonLogFormatTimestamp)},
+			want: []int64{parseTime(sampleApacheCommonLogFormatTimestamp).Unix()},
 		},
 		{
 			name:   "for two lines, returns two timestamps",
@@ -125,14 +125,14 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 			args: args{
 				r: strings.NewReader(strings.Repeat("haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1\n", 2)),
 			},
-			want:    test.RepeatTime(parseTime(sampleApacheCommonLogFormatTimestamp), 2),
+			want: test.RepeatTime(parseTime(sampleApacheCommonLogFormatTimestamp).Unix(), 2),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tf := &TimeFinder{
-				timeFormat:  tt.fields.timeFormat,
-				timeRegex:   tt.fields.timeRegex,
+				timeFormat: tt.fields.timeFormat,
+				timeRegex:  tt.fields.timeRegex,
 			}
 			got := tf.ExtractTimestampFromEachLine(tt.args.r)
 			if !reflect.DeepEqual(got, tt.want) {

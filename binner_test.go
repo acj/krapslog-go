@@ -4,12 +4,11 @@ import (
 	"github.com/acj/krapslog/internal/test"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 	type args struct {
-		timestampsFromLines []time.Time
+		timestampsFromLines []int64
 		terminalWidth       int
 	}
 	tests := []struct {
@@ -19,33 +18,22 @@ func Test_BinTimestampsToFitLineWidth(t *testing.T) {
 	}{
 		{
 			name: "zero timestamps", args: args{
-				timestampsFromLines: []time.Time{},
+				timestampsFromLines: []int64{},
 				terminalWidth:       5,
 			},
 			want: test.RepeatFloat(0, 5),
 		},
 		{
 			name: "one timestamp", args: args{
-				timestampsFromLines: []time.Time{{}},
+				timestampsFromLines: []int64{0},
 				terminalWidth:       5,
 			},
 			want: []float64{1, 0, 0, 0, 0},
 		},
 		{
 			name: "10 timestamps", args: args{
-				timestampsFromLines: []time.Time{
-					time.Time{}.Add(1 * time.Second),
-					time.Time{}.Add(2 * time.Second),
-					time.Time{}.Add(3 * time.Second),
-					time.Time{}.Add(4 * time.Second),
-					time.Time{}.Add(5 * time.Second),
-					time.Time{}.Add(6 * time.Second),
-					time.Time{}.Add(7 * time.Second),
-					time.Time{}.Add(8 * time.Second),
-					time.Time{}.Add(9 * time.Second),
-					time.Time{}.Add(10 * time.Second),
-				},
-				terminalWidth: 80,
+				timestampsFromLines: []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				terminalWidth:       80,
 			},
 			want: []float64{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
 		},
