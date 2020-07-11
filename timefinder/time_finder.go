@@ -6,7 +6,6 @@ import (
 	"io"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -16,20 +15,18 @@ const (
 )
 
 type TimeFinder struct {
-	parallelism int
 	timeFormat  string
 	timeRegex   *regexp.Regexp
 }
 
 // NewTimeFinder constructs a new TimeFinder instance. It returns an error if the time format is invalid.
-func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
+func NewTimeFinder(timeFormat string) (*TimeFinder, error) {
 	formatRegexString := convertTimeFormatToRegex(timeFormat)
 	formatRegex := regexp.MustCompile(formatRegexString)
 	if err := checkDateFormatForErrors(timeFormat); err != nil {
 		return nil, err
 	}
 	return &TimeFinder{
-		parallelism: parallelism,
 		timeFormat:  timeFormat,
 		timeRegex:   formatRegex,
 	}, nil
@@ -37,76 +34,17 @@ func NewTimeFinder(timeFormat string, parallelism int) (*TimeFinder, error) {
 
 // ExtractTimestampFromEachLine scans each line of the reader to find a timestamp.  It returns a slice of all the
 // timestamps that were found. If no timestamp is found, then the line is skipped.
-func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) []time.Time {
-	var wg sync.WaitGroup
-	lineChans := make([]chan string, tf.parallelism)
-	timeChans := make([]chan time.Time, tf.parallelism)
+func (tf *TimeFinder) ExtractTimestampFromEachLine(r io.Reader) []int64 {
+	times := make([]int64, 0)
 
-	for i, _ := range lineChans {
-		lineChans[i] = make(chan string, 1)
-		timeChans[i] = make(chan time.Time, 1)
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		t, err := tf.findFirstTimestamp(scanner.Text())
+		if err != nil {
+			continue
+		}
+		times = append(times, t.Unix())
 	}
-
-	// Stage 1: Produce lines
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		nextInChanIndex := 0
-		scanner := bufio.NewScanner(r)
-		for scanner.Scan() {
-			lineChans[nextInChanIndex] <- scanner.Text()
-			nextInChanIndex = (nextInChanIndex + 1) % tf.parallelism
-		}
-
-		for i := 0; i < tf.parallelism; i++ {
-			close(lineChans[i])
-		}
-	}()
-
-	// Stage 2: Fan out to convert lines into time structs. This is the expensive step.
-	for i := 0; i < tf.parallelism; i++ {
-		i := i
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			defer close(timeChans[i])
-
-			for line := range lineChans[i] {
-				t, err := tf.findFirstTimestamp(line)
-				if err != nil {
-					// Zero value will be ignored
-					timeChans[i] <- time.Time{}
-					continue
-				}
-				timeChans[i] <- t
-			}
-		}()
-	}
-
-	// Stage 3: Fan in to assemble list of timestamps, reading one line per channel to preserve line ordering
-	times := make([]time.Time, 0)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for {
-			drainedChannelCount := 0
-			for i := 0; i < tf.parallelism; i++ {
-				if t, ok := <-timeChans[i]; ok {
-					times = append(times, t)
-				} else {
-					drainedChannelCount++
-				}
-			}
-
-			// All inbound channels are drained, so we're done
-			if drainedChannelCount == tf.parallelism {
-				return
-			}
-		}
-	}()
-
-	wg.Wait()
 
 	return times
 }

@@ -131,7 +131,6 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tf := &TimeFinder{
-				parallelism: 1,
 				timeFormat:  tt.fields.timeFormat,
 				timeRegex:   tt.fields.timeRegex,
 			}
@@ -200,7 +199,7 @@ func TestTimeFinder_findFirstTimestamp(t *testing.T) {
 
 func TestNewTimeFinder(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		tf, err := NewTimeFinder(apacheCommonLogFormatDate, 1)
+		tf, err := NewTimeFinder(apacheCommonLogFormatDate)
 		if err != nil {
 			t.Errorf("unexpected NewTimeFinder() error = %v", err)
 			return
@@ -219,7 +218,7 @@ func TestNewTimeFinder(t *testing.T) {
 	})
 
 	t.Run("for garbage format, returns an error", func(t *testing.T) {
-		_, err := NewTimeFinder("garbage", 1)
+		_, err := NewTimeFinder("garbage")
 		if err == nil {
 			t.Error("NewTimeFinder: expected an error but didn't get one")
 			return
