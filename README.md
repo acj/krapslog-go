@@ -17,8 +17,6 @@ $ go get -u github.com/acj/krapslog
 ```
 $ krapslog -h
 Usage of krapslog:
-  -concurrency int
-        number of log lines to process concurrently (default 16)
   -format string
         date format to look for (see https://golang.org/pkg/time/#Time.Format) (default "02/Jan/2006:15:04:05.000")
   -markers int
