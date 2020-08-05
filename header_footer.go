@@ -12,7 +12,7 @@ func renderHeaderAndFooter(timestampsFromLines []int64, timeMarkerCount int, ter
 	duration := lastTimestamp.Sub(firstTimestamp)
 	footerMarkerCount := timeMarkerCount / 2
 	if timeMarkerCount%2 != 0 {
-		// If we have an odd number of markers, then the header has one more marker than the footer
+		// If we have an odd number of markers, then the footer has one more marker than the header
 		footerMarkerCount++
 	}
 
