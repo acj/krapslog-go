@@ -18,7 +18,8 @@ var apacheCommonLogFormatFields = struct {
 	timeRegex:  regexp.MustCompile(convertTimeFormatToRegex(apacheCommonLogFormatDate)),
 }
 
-var sampleApacheCommonLogFormatTimestamp = "23/Nov/2019:06:26:40.781"
+const sampleApacheCommonLogFormatTimestamp = "23/Nov/2019:06:26:40.781"
+const sampleLogLine = "haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1"
 
 func Test_checkDateFormatForErrors(t *testing.T) {
 	type args struct {
@@ -115,7 +116,7 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 			name:   "for single line, returns single timestamp",
 			fields: apacheCommonLogFormatFields,
 			args: args{
-				r: strings.NewReader(`haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} "GET /foobarbaz.html HTTP/1.1\n`),
+				r: strings.NewReader(sampleLogLine),
 			},
 			want: []int64{parseTime(sampleApacheCommonLogFormatTimestamp).Unix()},
 		},
@@ -123,7 +124,7 @@ func TestTimeFinder_extractTimestampFromEachLine(t *testing.T) {
 			name:   "for two lines, returns two timestamps",
 			fields: apacheCommonLogFormatFields,
 			args: args{
-				r: strings.NewReader(strings.Repeat("haproxy[20128]: 192.168.23.456:57305 [23/Nov/2019:06:26:40.781] public myapp/i-05fa49c0e7db8c328 0/0/0/78/78 206 913/458 - - ---- 9/9/6/0/0 0/0 {} {||1|bytes 0-0/499704} \"GET /foobarbaz.html\" HTTP/1.1\n", 2)),
+				r: strings.NewReader(strings.Repeat(sampleLogLine+"\n", 2)),
 			},
 			want: test.RepeatTime(parseTime(sampleApacheCommonLogFormatTimestamp).Unix(), 2),
 		},
