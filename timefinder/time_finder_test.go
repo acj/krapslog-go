@@ -226,3 +226,21 @@ func TestNewTimeFinder(t *testing.T) {
 		}
 	})
 }
+
+func Benchmark_extractTimestampFromEachLine(b *testing.B) {
+	r := strings.NewReader(strings.Repeat(sampleLogLine+"\n", 100))
+	tf, _ := NewTimeFinder(apacheCommonLogFormatDate)
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		r.Seek(0, 0)
+		b.StartTimer()
+		tf.ExtractTimestampFromEachLine(r)
+	}
+}
+
+func Benchmark_findFirstTimestamp(b *testing.B) {
+	tf, _ := NewTimeFinder(apacheCommonLogFormatDate)
+	for i := 0; i < b.N; i++ {
+		tf.findFirstTimestamp(sampleLogLine)
+	}
+}
